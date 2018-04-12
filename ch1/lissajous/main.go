@@ -5,12 +5,13 @@ import (
 	"image/color"
 	"image/gif"
 	"io"
+	"log"
 	"math"
 	"math/rand"
-	"os"
+	"net/http"
 )
 
-var palette = []color.Color{color.Black, color.Color{0xRR, 0xGG, 0xBB, 0xFF}}
+var palette = []color.Color{color.White, color.Black}
 
 const (
 	whiteIndex = 0
@@ -18,7 +19,10 @@ const (
 )
 
 func main() {
-	lissajous(os.Stdout)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		lissajous(w)
+	})
+	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
 
 func lissajous(out io.Writer) {
@@ -35,9 +39,9 @@ func lissajous(out io.Writer) {
 	for i := 0; i < nframes; i++ {
 		rect := image.Rect(0, 0, 2*size+1, 2*size+1)
 		img := image.NewPaletted(rect, palette)
-		for t := 0.0; t < cycles * 2 * math.Pi; t += res {
+		for t := 0.0; t < cycles*2*math.Pi; t += res {
 			x := math.Sin(t)
-			y := math.Sin(t * freq + phase)
+			y := math.Sin(t*freq + phase)
 			img.SetColorIndex(size+int(x*size+0.5), size+int(y*size+0.5), blackIndex)
 		}
 		phase += 0.1
